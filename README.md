@@ -1,3 +1,4 @@
+<img width="594" height="598" alt="schema_diagram" src="https://github.com/user-attachments/assets/8291ebda-7653-4085-8834-d9436d0a91cf" />
 
 select * from album;
 select * from album2;
