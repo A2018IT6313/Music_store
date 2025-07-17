@@ -13,40 +13,47 @@ select * from playlist_track;
 select * from track;
 
 /* Q1: Who is the senior most employee based on job title? */
-
+```sql
 select * from employee
 order by levels desc 
 limit 1;
+```
 
 
 /*Q2: Which countries have the most Invoices? */
+```sql
 select billing_country, count(*) as total
 from invoice
 group by 1
 order by total desc
 limit 1;
+```
 
 
 /* Q3: What are top 3 values of total invoice? */
+```sql
 select total from invoice
 order by total desc
 limit 3;
-
+```
 
 /* Q4: Which city has the best customers? We would like to throw a promotional
 Music Festival in the city we made the most money. 
 Write a query that returns one city that has the highest sum of invoice totals. 
 Return both the city name & sum of all invoice totals */
 
+```sql
 select billing_city,sum(total) as total
 from invoice
 group by 1
 order by total desc
 limit 1;
-
+```
 
 /* Q5: Who is the best customer? The customer who has spent the most money will be declared the
 best customer.  Write a query that returns the person who has spent the most money.*/
+
+```sql
 select * from customer;
 select * from invoice;
 
@@ -56,12 +63,14 @@ join invoice on customer.customer_id=invoice.customer_id
 group by c_id
 order by total desc
 limit 1;
-
+```
 
 			/* Question Set 2 - Moderate */
 
 /* Q1: Write query to return the email, first name, last name, & Genre of all Rock Music listeners. 
 Return your list ordered alphabetically by email starting with A. */
+
+```sql
 
 SELECT DISTINCT email AS Email,first_name AS FirstName, last_name AS LastName, genre.name AS Name
 FROM customer
@@ -71,9 +80,9 @@ JOIN track ON track.track_id = invoice_line.track_id
 JOIN genre ON genre.genre_id = track.genre_id
 WHERE genre.name LIKE 'Rock'
 ORDER BY email;
-
+```
 		/*OR*/
-
+```sql
 select  DISTINCT email,first_name, last_name
 from customer as c
 join invoice as i on c.customer_id=i.customer_id
@@ -84,10 +93,13 @@ where track_id in (
 	where g.name like 'Rock'
 )
 order by email;
+```
+
 
 /* Q2: Let's invite the artists who have written the most rock music in our dataset. 
 Write a query that returns the Artist name and total track count of the top 10 rock bands. */
 
+```sql
 SELECT ar.artist_id, ar.name, COUNT(ar.artist_id) AS total_count
 FROM artist AS ar
 JOIN album AS al ON ar.artist_id = al.artist_id
@@ -97,18 +109,19 @@ WHERE g.name = 'Rock'
 GROUP BY ar.artist_id
 ORDER BY total_count DESC
 LIMIT 10;
-
+```
 
 /*Q3: Return all the track names that have a song length longer than the average song length. Return 
 the Name and Milliseconds for each track. Order by the song length with the longest songs listed first. */
 
+```sql
 select name, milliseconds from track
 where milliseconds > (
 	select avg(milliseconds)
 	from track 
 	)
 order by milliseconds desc;
-
+```
 
 /* Question Set 3 - Advance */
 
@@ -122,6 +135,7 @@ Note, this one is tricky because the Total spent in the Invoice table might not 
 so you need to use the InvoiceLine table to find out how many of each product was purchased,
 and then multiply this by the price for each artist. */
 
+```sql
 WITH best_selling_artist AS (
 	SELECT artist.artist_id AS artist_id, artist.name AS artist_name, SUM(invoice_line.unit_price*invoice_line.quantity) AS total_sales
 	FROM invoice_line
@@ -141,6 +155,7 @@ JOIN album alb ON alb.album_id = t.album_id
 JOIN best_selling_artist bsa ON bsa.artist_id = alb.artist_id
 GROUP BY 1,2,3,4
 ORDER BY 5 DESC;
+```
 
 
 /* Q2: We want to find out the most popular music Genre for each country. We determine the most
@@ -152,6 +167,7 @@ is shared return all Genres. */
 and second need data at country level. */
 /* Method 1: Using CTE */
 
+```sql
 WITH popular_genre AS 
 (
     SELECT COUNT(invoice_line.quantity) AS purchases, customer.country, genre.name, genre.genre_id, 
@@ -165,10 +181,11 @@ WITH popular_genre AS
 	ORDER BY 2 ASC, 1 DESC
 )
 SELECT * FROM popular_genre WHERE RowNo <= 1
-
+```
 
 /* Method 2: : Using Recursive */
 
+```sql
 WITH RECURSIVE
 	sales_per_country AS(
 		SELECT COUNT(*) AS purchases_per_genre, customer.country, genre.name, genre.genre_id
@@ -189,7 +206,7 @@ SELECT sales_per_country.*
 FROM sales_per_country
 JOIN max_genre_per_country ON sales_per_country.country = max_genre_per_country.country
 WHERE sales_per_country.purchases_per_genre = max_genre_per_country.max_genre_number;
-
+```
 
 
 /* Q3: Write a query that determines the customer that has spent the most on music for each country. 
@@ -201,6 +218,7 @@ first find the most spent on music for each country and second filter the data f
 
 /* Method 1: using CTE */
 
+```sql
 WITH Customter_with_country AS (
 		SELECT customer.customer_id,first_name,last_name,billing_country,SUM(total) AS total_spending,
 	    ROW_NUMBER() OVER(PARTITION BY billing_country ORDER BY SUM(total) DESC) AS RowNo 
@@ -209,10 +227,11 @@ WITH Customter_with_country AS (
 		GROUP BY 1,2,3,4
 		ORDER BY 4 ASC,5 DESC)
 SELECT * FROM Customter_with_country WHERE RowNo <= 1
-
+```
 
 /* Method 2: Using Recursive */
 
+```sql
 WITH RECURSIVE 
 	customter_with_country AS (
 		SELECT customer.customer_id,first_name,last_name,billing_country,SUM(total) AS total_spending
@@ -232,3 +251,4 @@ JOIN country_max_spending ms
 ON cc.billing_country = ms.billing_country
 WHERE cc.total_spending = ms.max_spending
 ORDER BY 1;
+```
